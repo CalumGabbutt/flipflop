@@ -10,3 +10,18 @@ The package can be installed directly from a local copy of the Github repo by ru
 
 `python3 setup.py install`
 
+# Usage
+The functions used to perform the Bayesian inference can be imported in python using the command
+`from ticktockclock import ticktock`
+
+A number of key functions, in particular calculating key components of the log-likelihood function which is used as an input to dynesty, are computationally expensive and so have been written in Cython.
+
+An example script `run_inference.sh` has been included to run the Bayesian inference framework described in the manuscript on one of the methylation arrays included in the paper, reproducing some of the plots included in the supplementary information of the manuscript. However, due to the computational expense of the inference (the analysis in the paper used 1500 live-points in the nested sampling step and consisted of 4 independent chains, initialised randomly), the analysis was in fact performed in parallel on a HPC. 
+
+To run the example script, run the following code snippet from the command line, whilst located in the main directory copied from the Gitgub repo:
+`./run_inference.sh`
+
+(if a permission denied error is returned, run the command `chmod +x run_inference.sh` to grant access to the script)
+
+The pipeline consists of a sequential for loop which uses the dynesty nested sampling algorithm to calculate the posterior and Bayesian evidence for each stem cell number in a given range. In a Bayesian fashion, the posterior probability for S is then given by
+P(S|$\vec{\beta}$) = $\frac{P(\mathbb{Z}(S)|\vec{\beta})}{\sum_j P(\mathbb{Z}(S_j)|\vec{\beta})}$
