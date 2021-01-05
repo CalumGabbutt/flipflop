@@ -6,12 +6,7 @@ import sys
 import re
 import glob
 from setuptools import setup
-# try:
-#     from setuptools import setup
-#     setup
-# except ImportError:
-#     from distutils.core import setup
-#     setup
+
 
     
 setup(
@@ -24,8 +19,6 @@ setup(
     license="MIT",
     description=("A Bayesian pipeline to infer stem cell"
                  "dynamics from methylation array data."),
-    # package_data={"": ["README.md", "LICENSE", "AUTHORS.md"]},
-    # include_package_data=True,
     install_requires=["numpy", "scipy", "matplotlib", "pandas", 
-                    "dynesty", "joblib", "seaborn", "arviz"]
+                    "dynesty", "joblib", "seaborn", "arviz", "cython"]
 )
