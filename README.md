@@ -23,5 +23,6 @@ To run the example script, run the following code snippet from the command line,
 
 (if a permission denied error is returned, run the command `chmod +x run_inference.sh` to grant access to the script)
 
-The pipeline consists of a sequential for loop which uses the dynesty nested sampling algorithm to calculate the posterior and Bayesian evidence for each stem cell number in a given range. In a Bayesian fashion, the posterior probability for S is then given by
-P(S|$\vec{\beta}$) = $\frac{P(\mathbb{Z}(S)|\vec{\beta})}{\sum_j P(\mathbb{Z}(S_j)|\vec{\beta})}$
+The pipeline consists of a sequential for loop which uses the dynesty nested sampling algorithm to calculate the posterior and Bayesian evidence for each stem cell number in a given range. The posterior probability for S can then be found by applying Bayes rule (see manuscript for details). 
+
+Following the calculation of the composite posterior, a series of plots are generated to evaluate the quality of the fitting.
