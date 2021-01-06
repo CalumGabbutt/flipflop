@@ -6,8 +6,13 @@ This package is designed for the inference of stem cell dynamics from methylatio
 # Installation 
 `ticktockclock` is compatible with Python 3.6. It requires `numpy` (basic maths functions), `scipy` (special maths functions), `pandas` (dataframes manipulation), `dynesty` (nested sampling - Bayesian inference), `joblib` (pickling large data files, preserving dynesty structure),`matplotlib` (plotting), `seaborn` (plotting), `arviz` (Bayesian plotting), `cython` (accelerated computation)
 
-The package can be installed directly from a local copy of the Github repo by running:
+The package can be installed directly from a local copy of the Github repo. We reccommend installing ticktockclock in a virtual environment, using venv, and pip to install the dependencies (conda can also be used):
 
+`git clone https://github.com/CalumGabbutt/ticktockclock.git`
+`cd ticktockclock`
+`python3 -m venv ticktockenv`
+`source ticktockenv/bin/activate`
+`pip install -r requirements.txt`
 `python3 setup.py install`
 
 # Usage

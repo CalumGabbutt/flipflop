@@ -3,9 +3,9 @@
 datafile=data/beta_ticktock.csv
 patientinfofile=data/patientinfo.csv
 outputdir=examples
-samplename=PA5
+samplename=PA4
 Smin=3
-Smax=10
+Smax=7
 nlive=300
 
 mkdir -p ${outputdir}
