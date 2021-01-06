@@ -10,8 +10,8 @@ nlive=300
 
 mkdir -p ${outputdir}
 
-for ((S=$Smin;i<=$Smax;i++)); 
+for ((i=$Smin;i<=$Smax;i++)); 
 do
-    python3 inference.py $datafile $patientinfofile $outputdir $samplename $S --nlive $nlive --verbose
+    python3 inference.py $datafile $patientinfofile $outputdir $samplename $i --nlive $nlive --verbose
 done 
 python3 combine_samples.py $datafile $patientinfofile $outputdir $samplename
