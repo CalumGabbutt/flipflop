@@ -5,13 +5,13 @@ patientinfofile=data/patientinfo.csv
 outputdir=examples
 samplename=PA5
 Smin=3
-Smax=5
+Smax=10
 nlive=300
-verbose=False
 
 mkdir -p ${outputdir}
 
 for ((S=$Smin;i<=$Smax;i++)); 
 do
-    python3 inference.py $datafile $patientinfofile $outputdir $samplename $S --nlive $nlive --verbose $verbose
+    python3 inference.py $datafile $patientinfofile $outputdir $samplename $S --nlive $nlive --verbose
 done 
+python3 combine_samples.py $datafile $patientinfofile $outputdir $samplename
