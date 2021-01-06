@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import re
-import glob
 from setuptools import setup
+from setuptools.extension import Extension
+from Cython.Build import cythonize
+import numpy
 
+ext_modules=[ Extension("ticktock_model",
+              ["ticktockclock/ticktock_model.pyx"],
+              extra_compile_args = ["-ffast-math"])]
 
-    
 setup(
     name="ticktockclock",
     url="https://github.com/CalumGabbutt/ticktockclock",
@@ -17,6 +18,8 @@ setup(
     author_email="c.gabbutt@qmul.ac.uk",
     packages=["ticktockclock"],
     license="MIT",
+    ext_modules = cythonize(ext_modules, annotate=False),
+    include_dirs=[numpy.get_include()],
     description=("A Bayesian pipeline to infer stem cell"
                  "dynamics from methylation array data."),
     install_requires=["numpy", "scipy", "matplotlib", "pandas", 
