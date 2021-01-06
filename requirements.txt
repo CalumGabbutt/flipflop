@@ -1,0 +1,26 @@
+arviz @ file:///home/conda/feedstock_root/build_artifacts/arviz_1600909298598/work
+certifi==2020.12.5
+cftime @ file:///Users/runner/miniforge3/conda-bld/cftime_1605566735174/work
+cycler==0.10.0
+Cython @ file:///Users/runner/miniforge3/conda-bld/cython_1602367306370/work
+dynesty==1.0.1
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1607956439537/work
+kiwisolver @ file:///Users/runner/miniforge3/conda-bld/kiwisolver_1604322700085/work
+line-profiler==2.1.1
+matplotlib @ file:///Users/runner/miniforge3/conda-bld/matplotlib-suite_1605180233889/work
+netCDF4 @ file:///Users/runner/miniforge3/conda-bld/netcdf4_1608338530515/work
+numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1609881003069/work
+olefile @ file:///home/conda/feedstock_root/build_artifacts/olefile_1602866521163/work
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1607785313469/work
+pandas==1.2.0
+patsy==0.5.1
+Pillow @ file:///Users/runner/miniforge3/conda-bld/pillow_1609627784164/work
+pyparsing==2.4.7
+python-dateutil==2.8.1
+pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1608904108784/work
+scipy @ file:///Users/runner/miniforge3/conda-bld/scipy_1609457877771/work
+seaborn @ file:///home/conda/feedstock_root/build_artifacts/seaborn-base_1608544589436/work
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
+statsmodels @ file:///Users/runner/miniforge3/conda-bld/statsmodels_1605985685432/work
+tornado @ file:///Users/runner/miniforge3/conda-bld/tornado_1604105036791/work
+xarray @ file:///home/conda/feedstock_root/build_artifacts/xarray_1606798576866/work
