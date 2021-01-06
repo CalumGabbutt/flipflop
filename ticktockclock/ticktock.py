@@ -128,7 +128,7 @@ def loglikelihood(params, beta, S, age):
     return np.sum(loglikelihood_perpoint(params, beta, S, age))
 
 
-def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammascale=0.05, print_progress=True):
+def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammascale=0.05, verbose=False):
     # set the std of the halfnormal priors on lam, mu, gamma
     scales = np.array([lamscale, muscale, gammascale])
     ndims = 7 + 2*S +1
@@ -143,10 +143,7 @@ def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammasca
     print('Performing {} sampling'.format(mode))
     sampler = NestedSampler(loglikelihood_function, prior_function, ndims,
                             bound='multi', sample=mode, nlive=nlive)
-    if print_progress==True:
-        sampler.run_nested(print_progress=True)
-    else:
-        sampler.run_nested(print_progress=False)
+    sampler.run_nested(print_progress=verbose)
     res = sampler.results
     t1 = time()
 

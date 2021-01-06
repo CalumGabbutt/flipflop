@@ -19,8 +19,7 @@ parser.add_argument('S', type=int,
                     help='stem cell number to evaluate')
 parser.add_argument('--nlive', action='store', default=1500, dest='nlive', type=int,
                     help='number of live points in dynesty sampler (default:1500)')
-parser.add_argument('--verbose', action='store', default=True, dest='verbose',
-                    help='whether to print dynesty progress (default:True)')
+parser.add_argument('--verbose', action='store_true', default=False, dest='verbose')
 
 # Execute the parse_args() method
 args = parser.parse_args()
@@ -44,7 +43,7 @@ patientinfo = pd.read_csv(patientinfofile, keep_default_na=False, index_col = 0)
 beta = beta_values[sample].dropna().values
 age = patientinfo.loc[sample, 'age']
 
-res = ticktock.run_inference(beta, age, S, nlive=nlive, print_progress=verbose)
+res = ticktock.run_inference(beta, age, S, nlive=nlive, verbose=verbose)
 
 with open(outsamples, 'wb') as f:
     joblib.dump(res, f)
