@@ -30,27 +30,27 @@ args = parser.parse_args()
 outputfile = args.outputfile
 samplename = args.samplename
 n = args.n
-Strue = args.S
-lamtrue = args.lam
-mutrue = args.mu
-gammatrue = args.gamma
-deltatrue = args.delta
-etatrue = args.eta
-kappatrue = args.kappa
+S = args.S
+lam = args.lam
+mu = args.mu
+gamma = args.gamma
+delta = args.delta
+eta = args.eta
+kappa = args.kappa
 age = args.age
 
-ProbDist = ticktock.runModel(Strue, lamtrue, mutrue, gammatrue, age)
+ProbDist = ticktock.runModel(S, lam, mu, gamma, age)
 
 # Randomly draw n beta values from the ProbDist distribution (discrete dist.)
-beta_sample = np.random.choice(np.linspace(0, 1, 2*Strue+1), size=n, p=ProbDist)
+beta_sample = np.random.choice(np.linspace(0, 1, 2*S+1), size=n, p=ProbDist)
 
 # Linear transform on beta to account for array saturating (e.g. shifts mean of
 # lower peak from 0 to delta and upper peak from 1 to eta)
-beta_rescale = ticktock.rescale_beta(beta_sample, deltatrue, etatrue)
+beta_rescale = ticktock.rescale_beta(beta_sample, delta, eta)
 
 # Apply noise model (for each true beta value, draw the measured beta
 # value from a beta distribution with a mean equal to the true beta value
 # and a sample size equal to kappatrue)
-beta = pd.DataFrame({samplename:ticktock.beta_rvs(beta_rescale, kappatrue)})
+beta = pd.DataFrame({samplename:ticktock.beta_rvs(beta_rescale, kappa)})
 
 beta.to_csv(outputfile, index=False)
