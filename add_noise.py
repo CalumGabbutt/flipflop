@@ -3,17 +3,17 @@ import numpy as np
 from ticktockclock import ticktock
 import argparse
 
-parser = argparse.ArgumentParser(description='Simulate synthetic crypt')
-parser.add_argument('inputfile', type=str, default='~', 
+parser = argparse.ArgumentParser(description='Apply noise model to a csv of "true" beta values')
+parser.add_argument('inputfile', type=str,
                     help='path to csv file containing "true" beta values')
-parser.add_argument('outputfile', type=str, default='~', 
+parser.add_argument('outputfile', type=str, 
                     help='path to csv file in which to store output')
 parser.add_argument('-delta', default=0.04, type=float, 
-                    help='offset from zero') 
+                    help='offset from zero (default 0.04)') 
 parser.add_argument('-eta', default=0.92, type=float, 
-                    help='offset from one')   
+                    help='offset from one (default 0.92)')   
 parser.add_argument('-kappa', default=100, type=float, 
-                    help='sample size of beta distribution (see https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_sample_size)')   
+                    help='sample size of beta distribution (default 100)\n(see https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_sample_size)')   
 parser.add_argument('--index', action='store_true', default=False, dest='index',
                     help='indicate whether the first column of the inputfile is the index of the csv (default False)')
 # Execute the parse_args() method
@@ -21,9 +21,9 @@ args = parser.parse_args()
 
 inputfile = args.inputfile
 outputfile = args.outputfile
-delta = args.delta
-eta = args.eta
-kappa = args.kappa
+delta = float(args.delta)
+eta = float(args.eta)
+kappa = float(args.kappa)
 index = args.index
 
 if index:
