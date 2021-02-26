@@ -175,8 +175,8 @@ def run_inference(
     
     t1 = time()
 
-    timenestle = int(t1-t0)
-    print("\nTime taken to run 'Dynesty' is {} seconds".format(timenestle))
+    timesampler = int(t1-t0)
+    print("\nTime taken to run 'Dynesty' is {} seconds".format(timesampler))
 
     # print(res.summary())
 
