@@ -10,6 +10,8 @@ from time import time
 import ticktock_model
 import dynesty
 from dynesty import NestedSampler
+import ultranest
+import ultranest.stepsampler
 
 def runModel(S, lam, mu, gamma, age):
     return ticktock_model.runModel(S, lam, mu, gamma, age)
@@ -128,7 +130,18 @@ def loglikelihood(params, beta, S, age):
     return np.sum(loglikelihood_perpoint(params, beta, S, age))
 
 
-def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammascale=0.05, verbose=False):
+def run_inference(
+    beta, 
+    age, 
+    S, 
+    nlive=1500, 
+    lamscale=1.0, 
+    muscale=0.05, 
+    gammascale=0.05, 
+    verbose=False, 
+    mode='dynesty'
+):
+
     # set the std of the halfnormal priors on lam, mu, gamma
     scales = np.array([lamscale, muscale, gammascale])
     ndims = 7 + 2*S +1
@@ -139,17 +152,32 @@ def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammasca
     loglikelihood_function = lambda params: loglikelihood(params, beta, S, age)
 
     t0 = time()
-    mode = 'rwalk'
-    print('Performing {} sampling'.format(mode))
-    sampler = NestedSampler(loglikelihood_function, prior_function, ndims,
-                            bound='multi', sample=mode, nlive=nlive)
-    sampler.run_nested(print_progress=verbose)
-    res = sampler.results
+
+    if mode == 'dynesty':
+        print('Performing {} sampling'.format(mode))
+        sampler = NestedSampler(loglikelihood_function, prior_function, ndims,
+                                bound='multi', sample='rwalk', nlive=nlive)
+        sampler.run_nested(print_progress=verbose)
+        res = sampler.results
+
+        print(res.summary())
+    elif mode == 'ultranest':
+        param_names = ['lam', 'mu', 'gamma', 'delta', 'eta', 'kappamean', 'kappadisp'] + [f'kappa_{i}' for i in range(2*S + 1)]
+        sampler = ultranest.ReactiveNestedSampler(param_names, loglikelihood_function, prior_function)
+        sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps = 2 * len(param_names))
+        if verbose:
+            res = sampler.run(min_num_live_points=nlive)
+        else:
+            res = sampler.run(min_num_live_points=nlive, viz_callback=False)
+        sampler.print_results()
+    else:
+        raise Exception('mode argument must be in ["dynesty", "ultranest"]')
+    
     t1 = time()
 
     timenestle = int(t1-t0)
     print("\nTime taken to run 'Dynesty' is {} seconds".format(timenestle))
 
-    print(res.summary())
+    # print(res.summary())
 
     return res

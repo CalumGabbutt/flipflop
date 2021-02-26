@@ -68,10 +68,16 @@ S.sort()
 
 n = len(beta)
 
-logZs = np.array([results[s].logz[-1] for s in S])
-logZerrs = np.array([results[s].logzerr[-1] for s in S])
-logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
-Nsamples = np.array([results[s].niter for s in S])
+try:
+    logZs = np.array([results[s].logz[-1] for s in S])
+    logZerrs = np.array([results[s].logzerr[-1] for s in S])
+    logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
+    Nsamples = np.array([results[s].niter for s in S])
+except:
+    logZs = np.array([results[s]['logz'] for s in S])
+    logZerrs = np.array([results[s]['logzerr'] for s in S])
+    logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
+    Nsamples = np.array([results[s]['niter'] for s in S])
 
 prob_s = softmax(logZs)
 prob_s_bootstrap = softmax(logZs_bootstrap, axis=1)
@@ -116,7 +122,10 @@ for i in range(Ndraws):
         counter += 10
 
     s = Ssamples[i]
-    posterior =  dynesty.utils.resample_equal(results[s].samples, softmax(results[s].logwt))
+    try:
+        posterior =  dynesty.utils.resample_equal(results[s].samples, softmax(results[s].logwt))
+    except:
+        posterior = results[s]['samples']
     random_row = np.random.randint(posterior.shape[0])
     final_posterior[i, :7] = posterior[random_row, :7]
     lamsample, musample, gammasample, deltasample, etasample = final_posterior[i, :5]
