@@ -24,6 +24,8 @@ parser.add_argument('-nlive', default=1500, dest='nlive', type=int,
 parser.add_argument('--verbose', action='store_true', default=False, dest='verbose')
 parser.add_argument('-mode', default='dynesty', type=str,
                     help='which nested sampling tool to use ["dynesty", "ultranest"] (default "dynesty")')
+parser.add_argument('-log_dir', default=None,
+                    help='if a directory is specified, store the intermediate ultranest samples there (default None)')
 
 # Execute the parse_args() method
 args = parser.parse_args()
@@ -36,6 +38,7 @@ S = args.S
 nlive = args.nlive
 verbose = args.verbose
 mode = args.mode
+log_dir = args.log_dir
 
 if mode not in ["dynesty", "ultranest"]:
     raise Exception('mode argument must be in ["dynesty", "ultranest"]')
@@ -52,7 +55,8 @@ beta = beta_values[sample].dropna().values
 age = patientinfo.loc[sample, 'age']
 
 res = ticktock.run_inference(beta, age, S, nlive=nlive, 
-                            verbose=verbose, mode=mode)
+                            verbose=verbose, mode=mode, 
+                            log_dir=log_dir)
 
 with open(outsamples, 'wb') as f:
     joblib.dump(res, f)

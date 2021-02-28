@@ -139,7 +139,8 @@ def run_inference(
     muscale=0.05, 
     gammascale=0.05, 
     verbose=False, 
-    mode='dynesty'
+    mode='dynesty',
+    log_dir=None
 ):
 
     # set the std of the halfnormal priors on lam, mu, gamma
@@ -163,8 +164,21 @@ def run_inference(
         print(res.summary())
     elif mode == 'ultranest':
         param_names = ['lam', 'mu', 'gamma', 'delta', 'eta', 'kappamean', 'kappadisp'] + [f'kappa_{i}' for i in range(2*S + 1)]
-        sampler = ultranest.ReactiveNestedSampler(param_names, loglikelihood_function, prior_function)
+        if log_dir is not None:
+            sampler = ultranest.ReactiveNestedSampler(
+                        param_names, 
+                        loglikelihood_function, 
+                        prior_function,
+                        log_dir=log_dir, 
+                        resume=True)
+        else:
+            sampler = ultranest.ReactiveNestedSampler(
+                        param_names, 
+                        loglikelihood_function, 
+                        prior_function)
+
         sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps = 2 * len(param_names))
+
         if verbose:
             res = sampler.run(min_num_live_points=nlive)
         else:
@@ -176,7 +190,7 @@ def run_inference(
     t1 = time()
 
     timesampler = int(t1-t0)
-    print("\nTime taken to run 'Dynesty' is {} seconds".format(timesampler))
+    print("\nTime taken to run {} is {} seconds".format(mode, timesampler))
 
     # print(res.summary())
 
