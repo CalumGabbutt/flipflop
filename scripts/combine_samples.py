@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import pandas as pd
@@ -68,16 +70,21 @@ S.sort()
 
 n = len(beta)
 
-try:
-    logZs = np.array([results[s].logz[-1] for s in S])
-    logZerrs = np.array([results[s].logzerr[-1] for s in S])
-    logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
-    Nsamples = np.array([results[s].niter for s in S])
-except:
-    logZs = np.array([results[s]['logz'] for s in S])
-    logZerrs = np.array([results[s]['logzerr'] for s in S])
-    logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
-    Nsamples = np.array([results[s]['niter'] for s in S])
+logZs = np.empty(len(S))
+logZerrs = np.empty(len(S))
+Nsamples = np.empty(len(S), dtype=int)
+
+for index, s in enumerate(S):
+    try:
+        logZs[index] = results[s].logz[-1]
+        logZerrs[index] = results[s].logzerr[-1] 
+        Nsamples[index] = results[s].niter 
+    except:
+        logZs = results[s]['logz']
+        logZerrs = results[s]['logzerr'] 
+        Nsamples = results[s]['niter']
+
+logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
 
 prob_s = softmax(logZs)
 prob_s_bootstrap = softmax(logZs_bootstrap, axis=1)
