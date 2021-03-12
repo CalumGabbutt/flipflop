@@ -8,23 +8,23 @@ import argparse
 parser = argparse.ArgumentParser(description='Simulate synthetic crypt')
 parser.add_argument('outputfile', type=str, default='~', 
                     help='path to csv file in which to store output')
-parser.add_argument('--samplename', action='store', default='testsample', type=str,
+parser.add_argument('-samplename', action='store', default='testsample', type=str,
                     help='samplename of the generated beta values (column header)')
-parser.add_argument('--n', default=2000, type=int, help='number of CpG loci')
-parser.add_argument('--S', default=5, type=int, help='number of stem cells')
-parser.add_argument('--lam', default=1.0, type=float, 
+parser.add_argument('-n', default=2000, type=int, help='number of CpG loci')
+parser.add_argument('-S', default=5, type=int, help='number of stem cells')
+parser.add_argument('-lam', default=1.0, type=float, 
                     help='replacement rate per stem cell')
-parser.add_argument('--mu', default=0.05, type=float, 
+parser.add_argument('-mu', default=0.05, type=float, 
                     help='methylation rate per CpG site per year')      
-parser.add_argument('--gamma', default=0.05, type=float, 
+parser.add_argument('-gamma', default=0.05, type=float, 
                     help='demethylation rate per CpG site per year')  
-parser.add_argument('--delta', default=0.04, type=float, 
+parser.add_argument('-delta', default=0.04, type=float, 
                     help='offset from zero') 
-parser.add_argument('--eta', default=0.92, type=float, 
+parser.add_argument('-eta', default=0.92, type=float, 
                     help='offset from one')   
-parser.add_argument('--kappa', default=100, type=float, 
+parser.add_argument('-kappa', default=100, type=float, 
                     help='sample size of beta distribution (see https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_sample_size)')   
-parser.add_argument('--age', default=30, type=float, 
+parser.add_argument('-age', default=30, type=float, 
                     help='age of patient')  
 # Execute the parse_args() method
 args = parser.parse_args()
