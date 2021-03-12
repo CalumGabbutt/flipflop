@@ -22,10 +22,12 @@ parser.add_argument('S', type=int,
 parser.add_argument('-nlive', default=1500, dest='nlive', type=int,
                     help='number of live points in dynesty sampler (default:1500)')
 parser.add_argument('--verbose', action='store_true', default=False, dest='verbose')
-parser.add_argument('-mode', default='dynesty', type=str,
-                    help='which nested sampling tool to use ["dynesty", "ultranest"] (default "dynesty")')
-parser.add_argument('-log_dir', default=None,
-                    help='if a directory is specified, store the intermediate ultranest samples there (default None)')
+parser.add_argument('-lamscale', default=1.0, type=float,
+                    help='scale of replacement rate (default:1.0)')
+parser.add_argument('-muscale', default=0.05, type=float,
+                    help='scale of methylation rate (default:0.05)')
+parser.add_argument('-gammascale', default=0.05, type=float,
+                    help='scale of methylation rate (default:0.05)')
 
 # Execute the parse_args() method
 args = parser.parse_args()
@@ -34,14 +36,12 @@ datafile = args.datafile
 patientinfofile = args.patientinfofile
 outputdir = args.outputdir
 sample = args.sample
-S = args.S
-nlive = args.nlive
+S = int(args.S)
+nlive = int(args.nlive)
 verbose = args.verbose
-mode = args.mode
-log_dir = args.log_dir
-
-if mode not in ["dynesty", "ultranest"]:
-    raise Exception('mode argument must be in ["dynesty", "ultranest"]')
+lamscale=float(args.lamscale)
+muscale=float(args.muscale)
+gammascale=float(args.gammascale)
 
 outsamplesdir = os.path.join(outputdir, sample, 'posterior')
 outsamples = os.path.join(outsamplesdir, 'sample_{}.pkl'.format(S))
@@ -55,8 +55,8 @@ beta = beta_values[sample].dropna().values
 age = patientinfo.loc[sample, 'age']
 
 res = ticktock.run_inference(beta, age, S, nlive=nlive, 
-                            verbose=verbose, mode=mode, 
-                            log_dir=log_dir)
+                            verbose=verbose, lamscale=lamscale, 
+                            muscale=muscale, gammascale=gammascale)
 
 with open(outsamples, 'wb') as f:
     joblib.dump(res, f)
