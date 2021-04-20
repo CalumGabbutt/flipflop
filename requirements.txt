@@ -10,7 +10,7 @@ netCDF4==1.5.5.1
 numpy==1.19.5
 packaging==20.8
 pandas>=1.1.5
-Pillow==8.1.0
+Pillow>=8.1.1
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.5
