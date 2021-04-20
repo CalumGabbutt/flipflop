@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pandas as pd
 from ticktockclock import ticktock
 import os
@@ -17,9 +19,15 @@ parser.add_argument('sample', type=str,
                     help='samplename of beta array (must be a col in datafile index in patientinfo)')
 parser.add_argument('S', type=int,
                     help='stem cell number to evaluate')
-parser.add_argument('--nlive', action='store', default=1500, dest='nlive', type=int,
+parser.add_argument('-nlive', default=1500, dest='nlive', type=int,
                     help='number of live points in dynesty sampler (default:1500)')
 parser.add_argument('--verbose', action='store_true', default=False, dest='verbose')
+parser.add_argument('-lamscale', default=1.0, type=float,
+                    help='scale of replacement rate (default:1.0)')
+parser.add_argument('-muscale', default=0.05, type=float,
+                    help='scale of methylation rate (default:0.05)')
+parser.add_argument('-gammascale', default=0.05, type=float,
+                    help='scale of methylation rate (default:0.05)')
 
 # Execute the parse_args() method
 args = parser.parse_args()
@@ -28,9 +36,12 @@ datafile = args.datafile
 patientinfofile = args.patientinfofile
 outputdir = args.outputdir
 sample = args.sample
-S = args.S
-nlive = args.nlive
+S = int(args.S)
+nlive = int(args.nlive)
 verbose = args.verbose
+lamscale=float(args.lamscale)
+muscale=float(args.muscale)
+gammascale=float(args.gammascale)
 
 outsamplesdir = os.path.join(outputdir, sample, 'posterior')
 outsamples = os.path.join(outsamplesdir, 'sample_{}.pkl'.format(S))
@@ -43,7 +54,9 @@ patientinfo = pd.read_csv(patientinfofile, keep_default_na=False, index_col = 0)
 beta = beta_values[sample].dropna().values
 age = patientinfo.loc[sample, 'age']
 
-res = ticktock.run_inference(beta, age, S, nlive=nlive, verbose=verbose)
+res = ticktock.run_inference(beta, age, S, nlive=nlive, 
+                            verbose=verbose, lamscale=lamscale, 
+                            muscale=muscale, gammascale=gammascale)
 
 with open(outsamples, 'wb') as f:
     joblib.dump(res, f)

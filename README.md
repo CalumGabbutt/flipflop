@@ -1,5 +1,5 @@
 # ticktockclock
-Python code to accompany our paper "Reconstructing Contemporary Human Stem Cell Dynamics with Oscillatory Molecular Clocks"
+Python code to accompany our paper "Reconstruction of Contemporary Human Stem Cell Dynamics with Oscillatory Molecular Clocks"
 
 This package is designed for the inference of stem cell dynamics from methylation array data (e.g. Illumina EPIC arrays) of glandular tissue. 
 

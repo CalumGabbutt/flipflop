@@ -128,7 +128,17 @@ def loglikelihood(params, beta, S, age):
     return np.sum(loglikelihood_perpoint(params, beta, S, age))
 
 
-def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammascale=0.05, verbose=False):
+def run_inference(
+    beta, 
+    age, 
+    S, 
+    nlive=1500, 
+    lamscale=1.0, 
+    muscale=0.05, 
+    gammascale=0.05, 
+    verbose=False
+):
+
     # set the std of the halfnormal priors on lam, mu, gamma
     scales = np.array([lamscale, muscale, gammascale])
     ndims = 7 + 2*S +1
@@ -139,16 +149,17 @@ def run_inference(beta, age, S, nlive=1500, lamscale=1.0, muscale=0.05, gammasca
     loglikelihood_function = lambda params: loglikelihood(params, beta, S, age)
 
     t0 = time()
-    mode = 'rwalk'
-    print('Performing {} sampling'.format(mode))
+
+    print('Performing Dynesty sampling')
     sampler = NestedSampler(loglikelihood_function, prior_function, ndims,
-                            bound='multi', sample=mode, nlive=nlive)
+                            bound='multi', sample='rwalk', nlive=nlive)
     sampler.run_nested(print_progress=verbose)
     res = sampler.results
-    t1 = time()
 
-    timenestle = int(t1-t0)
-    print("\nTime taken to run 'Dynesty' is {} seconds".format(timenestle))
+    t1 = time()
+    timesampler = int(t1-t0)
+
+    print("\nTime taken to run Dynesty is {} seconds".format(timesampler))
 
     print(res.summary())
 

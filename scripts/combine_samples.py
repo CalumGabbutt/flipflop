@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import pandas as pd
@@ -68,10 +70,21 @@ S.sort()
 
 n = len(beta)
 
-logZs = np.array([results[s].logz[-1] for s in S])
-logZerrs = np.array([results[s].logzerr[-1] for s in S])
+logZs = np.empty(len(S))
+logZerrs = np.empty(len(S))
+Nsamples = np.empty(len(S), dtype=int)
+
+for index, s in enumerate(S):
+    try:
+        logZs[index] = results[s].logz[-1]
+        logZerrs[index] = results[s].logzerr[-1] 
+        Nsamples[index] = results[s].niter 
+    except:
+        logZs = results[s]['logz']
+        logZerrs = results[s]['logzerr'] 
+        Nsamples = results[s]['niter']
+
 logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
-Nsamples = np.array([results[s].niter for s in S])
 
 prob_s = softmax(logZs)
 prob_s_bootstrap = softmax(logZs_bootstrap, axis=1)
@@ -116,7 +129,10 @@ for i in range(Ndraws):
         counter += 10
 
     s = Ssamples[i]
-    posterior =  dynesty.utils.resample_equal(results[s].samples, softmax(results[s].logwt))
+    try:
+        posterior =  dynesty.utils.resample_equal(results[s].samples, softmax(results[s].logwt))
+    except:
+        posterior = results[s]['samples']
     random_row = np.random.randint(posterior.shape[0])
     final_posterior[i, :7] = posterior[random_row, :7]
     lamsample, musample, gammasample, deltasample, etasample = final_posterior[i, :5]
