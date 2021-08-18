@@ -27,5 +27,8 @@ setup(
     description=("A Bayesian pipeline to infer stem cell"
                  "dynamics from methylation array data."),
     install_requires=["numpy", "scipy", "matplotlib", "pandas", 
-                    "dynesty", "joblib", "seaborn", "arviz", "cython"]
+                    "dynesty", "joblib", "seaborn", "arviz", "cython"],
+    package_data={
+        "ticktockclock": ["files/*"],
+    }
 )
