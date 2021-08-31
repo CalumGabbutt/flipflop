@@ -2,19 +2,19 @@
 
 import pandas as pd
 import numpy as np
-from ticktockclock import ticktock
+from flipflop import flipflop
 import argparse
 
 def noise(beta_true, delta, eta, kappa):
 
     # Linear transform on beta to account for array saturating (e.g. shifts mean of
     # lower peak from 0 to delta and upper peak from 1 to eta)
-    beta_rescale = ticktock.rescale_beta(beta_true, delta, eta)
+    beta_rescale = flipflop.rescale_beta(beta_true, delta, eta)
 
     # Apply noise model (for each true beta value, draw the measured beta
     # value from a beta distribution with a mean equal to the true beta value
     # and a sample size equal to kappa)
-    beta_sample = ticktock.beta_rvs(beta_rescale, kappa)
+    beta_sample = flipflop.beta_rvs(beta_rescale, kappa)
 
     return beta_sample
 

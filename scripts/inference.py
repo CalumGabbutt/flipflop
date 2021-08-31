@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-from ticktockclock import ticktock
+from flipflop import flipflop
 import os
 import sys
 import joblib
@@ -9,7 +9,7 @@ import joblib
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='Run ticktock Bayesian inference.')
+    parser = argparse.ArgumentParser(description='Run flipflop Bayesian inference.')
     parser.add_argument('datafile', type=str,
                         help='path to csv containing beta values')
     parser.add_argument('patientinfofile', type=str,
@@ -55,7 +55,7 @@ def main():
     beta = beta_values[sample].dropna().values
     age = patientinfo.loc[sample, 'age']
 
-    res = ticktock.run_inference(beta, age, S, nlive=nlive, 
+    res = flipflop.run_inference(beta, age, S, nlive=nlive, 
                                 verbose=verbose, lamscale=lamscale, 
                                 muscale=muscale, gammascale=gammascale)
 

@@ -2,24 +2,24 @@
 
 import pandas as pd
 import numpy as np
-from ticktockclock import ticktock
+from flipflop import flipflop
 import argparse
 
 def draw_beta(S, lam, mu, gamma, delta, eta, kappa, age, n):
 
-    ProbDist = ticktock.runModel(S, lam, mu, gamma, age)
+    ProbDist = flipflop.runModel(S, lam, mu, gamma, age)
 
     # Randomly draw n beta values from the ProbDist distribution (discrete dist.)
     beta_sample = np.random.choice(np.linspace(0, 1, 2*S+1), size=n, p=ProbDist)
 
     # Linear transform on beta to account for array saturating (e.g. shifts mean of
     # lower peak from 0 to delta and upper peak from 1 to eta)
-    beta_rescale = ticktock.rescale_beta(beta_sample, delta, eta)
+    beta_rescale = flipflop.rescale_beta(beta_sample, delta, eta)
 
     # Apply noise model (for each true beta value, draw the measured beta
     # value from a beta distribution with a mean equal to the true beta value
     # and a sample size equal to kappatrue)
-    return ticktock.beta_rvs(beta_rescale, kappa)
+    return flipflop.beta_rvs(beta_rescale, kappa)
 
 
 def main():
