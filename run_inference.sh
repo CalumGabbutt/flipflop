@@ -1,6 +1,6 @@
 #!/bin/sh
 
-datafile=data/beta_ticktock.csv
+datafile=data/beta_flipflop.csv
 patientinfofile=data/patientinfo.csv
 outputdir=examples
 samplename=PA4

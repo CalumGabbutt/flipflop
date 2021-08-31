@@ -14,7 +14,7 @@ import dynesty
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from ticktockclock import ticktock
+from flipflop import flipflop
 import glob
 
 import argparse
@@ -140,16 +140,16 @@ def main():
 
         kappasample = posterior[random_row, 7:]
 
-        LL[0, i, :] = ticktock.loglikelihood_perpoint(posterior[random_row, :], beta, s, age)
+        LL[0, i, :] = flipflop.loglikelihood_perpoint(posterior[random_row, :], beta, s, age)
 
-        ProbDist = ticktock.runModel(s, lamsample, musample, gammasample, age)
+        ProbDist = flipflop.runModel(s, lamsample, musample, gammasample, age)
 
         k_sample = np.random.choice(np.arange(0, 2*s+1), size=n, p=ProbDist)
         beta_sample = k_sample / (2*s)
 
-        beta_sample = ticktock.rescale_beta(beta_sample, deltasample, etasample)
+        beta_sample = flipflop.rescale_beta(beta_sample, deltasample, etasample)
 
-        beta_hat[0, i, :] = ticktock.beta_rvs(beta_sample, kappasample[k_sample])
+        beta_hat[0, i, :] = flipflop.beta_rvs(beta_sample, kappasample[k_sample])
         
 
     with open(os.path.join(outfinaldir, "finalposterior.pkl"), 'wb') as f:

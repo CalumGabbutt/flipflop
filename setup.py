@@ -7,19 +7,19 @@ from Cython.Build import cythonize
 import numpy
 import glob
 
-ext_modules=[ Extension("ticktock_model",
-              ["ticktockclock/ticktock_model.pyx"],
+ext_modules=[ Extension("flipflop_model",
+              ["flipflop/flipflop_model.pyx"],
               extra_compile_args = ["-ffast-math"])]
 
 scripts = glob.glob("scripts/*.py")
 
 setup(
-    name="ticktockclock",
-    url="https://github.com/CalumGabbutt/ticktockclock",
+    name="flipflop",
+    url="https://github.com/CalumGabbutt/flipflop",
     version=1.0,
     author="Calum Gabbutt",
     author_email="c.gabbutt@qmul.ac.uk",
-    packages=["ticktockclock"],
+    packages=["flipflop"],
     license="MIT",
     scripts=scripts,
     ext_modules = cythonize(ext_modules, annotate=False),
@@ -29,6 +29,6 @@ setup(
     install_requires=["numpy", "scipy", "matplotlib", "pandas", 
                     "dynesty", "joblib", "seaborn", "arviz", "cython"],
     package_data={
-        "ticktockclock": ["files/*"],
+        "flipflop": ["files/*"],
     }
 )

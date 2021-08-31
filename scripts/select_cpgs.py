@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import os
-import ticktockclock
+import flipflop
 import inspect
 
 def filter_noise(beta, M, U, r_min=500):
@@ -92,7 +92,7 @@ def main():
     disease = args.disease
     p = float(args.percent)
 
-    packagedir = os.path.dirname(inspect.getfile(ticktockclock))
+    packagedir = os.path.dirname(inspect.getfile(flipflop))
     data_directory = os.path.join(packagedir, "files")
 
     if manifestfile is None:
