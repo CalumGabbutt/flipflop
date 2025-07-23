@@ -49,61 +49,28 @@ def main():
     beta = beta_values[sample].dropna().values
     age = patientinfo.loc[sample, 'age']
 
-    outsampleslist = glob.glob(os.path.join(outsamplesdir, 'sample_*.pkl'))
-
-    S = list()
-    results = dict()
-    for outsamples in outsampleslist:
-        s = int(outsamples.split('.pkl')[0].split('_')[-1])
-        try:
-            with open(outsamples, 'rb') as f:
-                res = joblib.load(f)
-
-            results[s] = res
-
-            S.append(s)
-            print(s)
-        except EOFError:
-            print('sample_{}.pkl is not a correctly formatted pickle file'.format(s))
-
-
-    S.sort()
-
     n = len(beta)
 
-    logZs = np.empty(len(S))
-    logZerrs = np.empty(len(S))
-    Nsamples = np.empty(len(S), dtype=int)
+    outsamples = os.path.join(outsamplesdir, f'{sample}_sample.pkl')
 
-    for index, s in enumerate(S):
-        try:
-            logZs[index] = results[s].logz[-1]
-            logZerrs[index] = results[s].logzerr[-1] 
-            Nsamples[index] = results[s].niter 
-        except:
-            logZs = results[s]['logz']
-            logZerrs = results[s]['logzerr'] 
-            Nsamples = results[s]['niter']
+    with open(outsamples, 'rb') as f:
+        res = joblib.load(f)
 
-    logZs_bootstrap = np.random.normal(loc = logZs, scale=logZerrs, size = (10000, len(logZs)))  
+    posterior =  dynesty.utils.resample_equal(res.samples, softmax(res.logwt))
 
-    prob_s = softmax(logZs)
-    prob_s_bootstrap = softmax(logZs_bootstrap, axis=1)
-    prob_s_err = np.std(prob_s_bootstrap, axis=0) 
+    df = pd.DataFrame(posterior, columns = ['lam', 'mu', 'gamma', 'nu', 'zeta',
+                                            'delta', 'eta', 'kappa', 'S'])
+    
+    df.to_csv(os.path.join(outfinaldir, "posterior.csv"), index=False)
 
-    print('\nS:P(S)')
-    for i, s in enumerate(S):
-        print('{}:{:.3e}'.format(s, prob_s[i]))
-
-    df = pd.DataFrame({'S':S, 'prob':prob_s, 'prob_err':prob_s_err})
-    df.S.astype(int)
-    df.to_csv(os.path.join(outfinaldir, "prob_of_S.csv"), index=False)
+    df_S = df['S'].astype(int).value_counts()
+    df_S.to_csv(os.path.join(outfinaldir, "prob_of_S.csv"), index=False)
 
     sns.set_style('white') 
     sns.set_context("paper", font_scale=1.6)
 
     fig, ax = plt.subplots()
-    ax.bar(S, prob_s, yerr=prob_s_err, color=sns.xkcd_rgb["denim blue"])
+    ax.bar(df_S.index, df_S.values, color=sns.xkcd_rgb["denim blue"])
     sns.despine()
     plt.xlabel("Stem Cell Number (S)")
     plt.ylabel("Probability")
@@ -113,58 +80,36 @@ def main():
 
 
     Ndraws = 3000
-    Ssamples = np.random.choice(S, size=Ndraws, p=prob_s)
 
+    if posterior.shape[0] > Ndraws:
+        random_rows = np.random.choice(posterior.shape[0], 
+                        replace = False, size = Ndraws)
+        final_posterior = posterior[random_rows, :]
+    else: 
+        final_posterior = posterior
+        Ndraws = posterior.shape[0]
 
-    final_posterior = np.empty((Ndraws, 8))
-    final_posterior[:, -1] = Ssamples
     beta_hat = np.empty((1, Ndraws, n))
     LL = np.empty((1, Ndraws, n))
 
     progress_ints = (np.arange(0.1, 1.1, 0.1) * Ndraws - 1).astype(int)  
     counter = 10
-    for i in range(Ndraws):
+    for i in range(final_posterior.shape[0]):
+        (lamsample, musample, gammasample, nusample, zetasample, 
+            deltasample, etasample, kappasample, s) = final_posterior[i, :]
 
-        if i in progress_ints:
-            print('{}% complete'.format(counter))
-            counter += 10
+        LL[0, i, :] = flipflop.loglikelihood_perpoint(final_posterior[i, :], beta, age)
 
-        s = Ssamples[i]
-        try:
-            posterior =  dynesty.utils.resample_equal(results[s].samples, softmax(results[s].logwt))
-        except:
-            posterior = results[s]['samples']
-        random_row = np.random.randint(posterior.shape[0])
-        final_posterior[i, :7] = posterior[random_row, :7]
-        lamsample, musample, gammasample, deltasample, etasample = final_posterior[i, :5]
-
-        kappasample = posterior[random_row, 7:]
-
-        LL[0, i, :] = flipflop.loglikelihood_perpoint(posterior[random_row, :], beta, s, age)
-
-        ProbDist = flipflop.runModel(s, lamsample, musample, gammasample, age)
+        ProbDist = flipflop.runModel(s, lamsample, musample, gammasample,
+                                        nusample, zetasample, age)
 
         k_sample = np.random.choice(np.arange(0, 2*s+1), size=n, p=ProbDist)
         beta_sample = k_sample / (2*s)
 
         beta_sample = flipflop.rescale_beta(beta_sample, deltasample, etasample)
 
-        beta_hat[0, i, :] = flipflop.beta_rvs(beta_sample, kappasample[k_sample])
+        beta_hat[0, i, :] = flipflop.beta_rvs(beta_sample, kappasample)
         
-
-    with open(os.path.join(outfinaldir, "finalposterior.pkl"), 'wb') as f:
-        joblib.dump(final_posterior, f)
-
-    df = pd.DataFrame({'lam':final_posterior[:,0],  
-                        'mu':final_posterior[:,1], 
-                        'gamma':final_posterior[:,2], 
-                        'delta':final_posterior[:,3],
-                        'eta':final_posterior[:,4], 
-                        'kappamean':final_posterior[:,5],
-                        'kappadisp':final_posterior[:,6],
-                        'S':Ssamples})
-    df.to_csv(os.path.join(outfinaldir, "finalposterior.csv"), index=False)
-
     fig, ax = plt.subplots()      
     plt.hist(beta, np.linspace(0, 1, 100), density=True, alpha=0.4, linewidth=0) 
     plt.hist(np.ravel(beta_hat), np.linspace(0, 1, 100), density=True, alpha=0.4, linewidth=0) 
@@ -176,14 +121,8 @@ def main():
     plt.savefig("{}/posterior_predictive.png".format(outfinaldir), dpi = 300)
     plt.close()
 
-    inference = az.from_dict(posterior={'lam':final_posterior[:,0],  
-                                        'mu':final_posterior[:,1], 
-                                        'gamma':final_posterior[:,2], 
-                                        'delta':final_posterior[:,3],
-                                        'eta':final_posterior[:,4], 
-                                        'kappamean':final_posterior[:,5],
-                                        'kappadisp':final_posterior[:,6],
-                                        'S':Ssamples}, 
+    inference = az.from_dict(posterior={col:final_posterior[:, j] 
+                                        for j, col in enumerate(df.columns)},
                             observed_data={'beta':beta},
                             posterior_predictive={'beta_hat':beta_hat}, 
                             sample_stats={"log_likelihood":LL}
@@ -191,7 +130,9 @@ def main():
 
     az.to_netcdf(inference, "{}/inference.nc".format(outfinaldir))
 
-    pairs = az.plot_pair(inference, var_names=('lam', 'mu', 'gamma', 'delta', 'eta', 'kappamean', 'kappadisp')) 
+    pairs = az.plot_pair(inference, var_names=('lam', 'mu', 'gamma', 
+                                            'nu', 'zeta', 'delta', 'eta',
+                                            'kappa')) 
     plt.savefig('{}/plot_pairs.png'.format(outfinaldir), dpi=300)
     plt.close()
 

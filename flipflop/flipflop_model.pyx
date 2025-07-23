@@ -43,7 +43,8 @@ cpdef beta_lpdf(double[:] y, double[:] alpha, double[:] beta):
 
     return lpk
 
-cdef generateRateMatrix(int S, double lam, double mu, double gamma, int[:,:] stateVar, int num_states):
+cdef generateRateMatrix(int S, double lam, double mu, double gamma, double nu,
+                             double zeta, int[:,:] stateVar, int num_states):
     cdef np.ndarray[np.float_t, ndim=2] RateMatrix 
     cdef Py_ssize_t down
     cdef Py_ssize_t across
@@ -75,15 +76,17 @@ cdef generateRateMatrix(int S, double lam, double mu, double gamma, int[:,:] sta
                         elif k == k_down and m == m_down-1:
                             RateMatrix[down, across] = m * (S-m-k) * lam / (S-1)
                         elif k == k_down+1 and m == m_down-1:
-                            RateMatrix[down, across] = k * (m*lam/(S-1)+mu)
+                            RateMatrix[down, across] = k * (m*lam/(S-1)+nu)
                         elif k == k_down+1 and m == m_down:
-                            RateMatrix[down, across] = k * ((S-m-k)*lam/(S-1)+gamma)
+                            RateMatrix[down, across] = k * ((S-m-k)*lam/(S-1)+zeta)
                         elif k == k_down and m == m_down+1:
                             RateMatrix[down, across] = m * (S-m-k) * lam / (S-1)
                         elif k == k_down-1 and m == m_down+1:
                             RateMatrix[down, across] = m * (k*lam/(S-1)+2*gamma)
                         elif k == k_down and m == m_down:
-                            RateMatrix[down, across] = -(2*((k+m)*(S-m-k)+k*m)*lam/(S-1) + (k+2*m)*gamma + (2*S-(k+2*m))*mu) 
+                            RateMatrix[down, across] = -(2*((k+m)*(S-m-k)+k*m)*lam/(S-1) 
+                                                            + k * zeta + 2*m*gamma + 
+                                                            (S-m-k)*2*mu + k*nu) 
 
     return RateMatrix
 
@@ -111,7 +114,8 @@ cdef generateStateVar(int S, int num_states):
     return stateVar
 
 
-cdef findProbDist(np.ndarray[np.float_t, ndim=2] RateMatrix, double[:] InitialConditions, int[:,:] stateVar, double age, int S, int num_states):
+cdef findProbDist(np.ndarray[np.float_t, ndim=2] RateMatrix, double[:] InitialConditions, 
+                    int[:,:] stateVar, double age, int S, int num_states):
     cdef double[:] ProbStates
     cdef double[:] ProbDist
     cdef Py_ssize_t index
@@ -139,7 +143,8 @@ cdef findProbDist(np.ndarray[np.float_t, ndim=2] RateMatrix, double[:] InitialCo
 
     return ProbDist
 
-cpdef runModel(int S, double lam, double mu, double gamma, double age):
+cpdef runModel(int S, double lam, double mu, double gamma, double nu, 
+                            double zeta, double age):
     cdef int num_states = int(0.5 * ((S+1) * (S+2)))
     cdef int[:,:] stateVar 
     cdef np.ndarray[np.float_t, ndim=2] RateMatrix 
@@ -151,7 +156,7 @@ cpdef runModel(int S, double lam, double mu, double gamma, double age):
 
     # For a given set of stem cell dynamics parameters, generate the transition 
     # matrix 
-    RateMatrix = generateRateMatrix(S, lam, mu, gamma, stateVar, num_states)
+    RateMatrix = generateRateMatrix(S, lam, mu, gamma, nu, zeta, stateVar, num_states)
 
     # Define the initial conditions. Given no other information, we assume that 
     # the population is initially clonal with an equal probability of all the alleles

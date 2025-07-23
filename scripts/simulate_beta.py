@@ -5,9 +5,9 @@ import numpy as np
 from flipflop import flipflop
 import argparse
 
-def draw_beta(S, lam, mu, gamma, delta, eta, kappa, age, n):
+def draw_beta(S, lam, mu, gamma, nu, zeta, delta, eta, kappa, age, n):
 
-    ProbDist = flipflop.runModel(S, lam, mu, gamma, age)
+    ProbDist = flipflop.runModel(S, lam, mu, gamma, nu, zeta, age)
 
     # Randomly draw n beta values from the ProbDist distribution (discrete dist.)
     beta_sample = np.random.choice(np.linspace(0, 1, 2*S+1), size=n, p=ProbDist)
@@ -33,9 +33,13 @@ def main():
     parser.add_argument('-lam', default=1.0, type=float, 
                         help='replacement rate per stem cell')
     parser.add_argument('-mu', default=0.05, type=float, 
-                        help='methylation rate per CpG site per year')      
+                        help='homozygous methylation rate per CpG site per year')      
     parser.add_argument('-gamma', default=0.05, type=float, 
-                        help='demethylation rate per CpG site per year')  
+                        help='homozygous demethylation rate per CpG site per year')
+    parser.add_argument('-nu', default=0.05, type=float, 
+                        help='heterozygous methylation rate per CpG site per year')  
+    parser.add_argument('-zeta', default=0.05, type=float, 
+                        help='heterozygous demethylation rate per CpG site per year')
     parser.add_argument('-delta', default=0.04, type=float, 
                         help='offset from zero') 
     parser.add_argument('-eta', default=0.92, type=float, 

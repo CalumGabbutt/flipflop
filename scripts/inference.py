@@ -18,17 +18,19 @@ def main():
                         help='path to folder in which to store output')
     parser.add_argument('sample', type=str,
                         help='samplename of beta array (must be a col in datafile index in patientinfo)')
-    parser.add_argument('S', type=int,
-                        help='stem cell number to evaluate')
     parser.add_argument('-nlive', default=1500, dest='nlive', type=int,
                         help='number of live points in dynesty sampler (default:1500)')
     parser.add_argument('--verbose', action='store_true', default=False, dest='verbose')
     parser.add_argument('-lamscale', default=1.0, type=float,
                         help='scale of replacement rate (default:1.0)')
     parser.add_argument('-muscale', default=0.05, type=float,
-                        help='scale of methylation rate (default:0.05)')
+                        help='scale of homozygous methylation rate (default:0.05)')
     parser.add_argument('-gammascale', default=0.05, type=float,
-                        help='scale of methylation rate (default:0.05)')
+                        help='scale of homozygous demethylation rate (default:0.05)')
+    parser.add_argument('-nuscale', default=0.05, type=float,
+                        help='scale of heterozygous methylation rate (default:0.05)')
+    parser.add_argument('-zetascale', default=0.05, type=float,
+                        help='scale of heterozygous demethylation rate (default:0.05)')
 
     # Execute the parse_args() method
     args = parser.parse_args()
@@ -37,15 +39,16 @@ def main():
     patientinfofile = args.patientinfofile
     outputdir = args.outputdir
     sample = args.sample
-    S = int(args.S)
     nlive = int(args.nlive)
     verbose = args.verbose
     lamscale=float(args.lamscale)
     muscale=float(args.muscale)
     gammascale=float(args.gammascale)
+    nuscale=float(args.nuscale)
+    zetascale=float(args.zetascale)
 
     outsamplesdir = os.path.join(outputdir, sample, 'posterior')
-    outsamples = os.path.join(outsamplesdir, 'sample_{}.pkl'.format(S))
+    outsamples = os.path.join(outsamplesdir, f'{sample}_sample.pkl')
 
     os.makedirs(outsamplesdir, exist_ok=True)
 
@@ -55,9 +58,10 @@ def main():
     beta = beta_values[sample].dropna().values
     age = patientinfo.loc[sample, 'age']
 
-    res = flipflop.run_inference(beta, age, S, nlive=nlive, 
+    res = flipflop.run_inference(beta, age, nlive=nlive, 
                                 verbose=verbose, lamscale=lamscale, 
-                                muscale=muscale, gammascale=gammascale)
+                                muscale=muscale, gammascale=gammascale,
+                                nuscale=nuscale, zetascale=zetascale)
 
     with open(outsamples, 'wb') as f:
         joblib.dump(res, f)

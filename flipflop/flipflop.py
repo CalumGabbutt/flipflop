@@ -11,8 +11,8 @@ import flipflop_model
 import dynesty
 from dynesty import NestedSampler
 
-def runModel(S, lam, mu, gamma, age):
-    return flipflop_model.runModel(S, lam, mu, gamma, age)
+def runModel(S, lam, mu, gamma, nu, zeta, age):
+    return flipflop_model.runModel(S, lam, mu, gamma, nu, zeta, age)
 
 def beta_lpdf(y, alpha, beta):
     return flipflop_model.beta_lpdf(y, alpha, beta)
@@ -77,32 +77,54 @@ def truncnormal_ppf(y, mean, std, lb=0.0, ub=1.0):
 
     return stats.truncnorm.ppf(y, a, b, loc=mean, scale=std)
 
+def lognormal_convert_params(mu, sigma):
+    """
+    Convert mean/std parameterization of a beta distribution to the ones 
+    scipy supports
+    """
+
+    if np.any(mu <= 0):
+        raise Exception("mu must be greater than 0")
+    elif np.any(sigma <= 0) :
+        raise Exception("sigma must be greater than 0")
     
-def prior_transform(flat_prior, scales):
-    # priors for parameters [lam_S, mu, gamma, delta, eta, kappamean, kappadisp, kappa[]]
+    log_mean = np.log(mu) - 0.5 * np.log1p(sigma**2 / mu**2)
+    log_std = np.sqrt(np.log1p(sigma**2 / mu ** 2))
+
+    return log_mean, log_std
+
+def lognormal_ppf(x, mu, sigma, **kwargs):
+    """
+    Calculate the ppf of a lognormal distribution with mean/std specified
+    """
+    log_mean, log_std = lognormal_convert_params(mu, sigma)
+    return stats.lognorm.ppf(x, log_std, scale=np.exp(log_mean), **kwargs)
+
+
+def prior_transform(flat_prior, scales, Smin, Smax):
+    # priors for parameters [lam, mu, gamma, nu, zeta, delta, eta, kappa, S]
     prior = np.empty(np.shape(flat_prior))
-    prior[:3] = stats.halfnorm.ppf(flat_prior[:3], scale=scales)
+    prior[:5] = stats.halfnorm.ppf(flat_prior[:5], scale=scales)
 
     # priors on delta and eta
-    prior[3] = stats.beta.ppf(flat_prior[3], 5, 95)
-    prior[4] = stats.beta.ppf(flat_prior[4], 95, 5)
+    prior[5] = stats.beta.ppf(flat_prior[5], 5, 95)
+    prior[6] = stats.beta.ppf(flat_prior[6], 95, 5)
 
     # mean and dispersion hyperpriors of kappa 
-    prior[5] = stats.halfnorm.ppf(flat_prior[5], scale = 500)
-    prior[6] = stats.halfnorm.ppf(flat_prior[6], scale = 50)
+    prior[7] = lognormal_ppf(flat_prior[7], 100, 30)
 
-    # hierarchical priors on kappa[] 
-    prior[7:] = truncnormal_ppf(flat_prior[7:], prior[5], prior[6], lb=0.0, ub=np.inf)
+    prior[8] = stats.randint.ppf(flat_prior[8], Smin, Smax + 1)
+
     return prior
 
-def loglikelihood_perpoint(params, y, S, age):
+def loglikelihood_perpoint(params, y, age):
 
     # unpack parameters
-    lam, mu, gamma, delta, eta, kappamean, kappadisp = params[:7]
-    kappa = params[7:]
+    lam, mu, gamma, nu, zeta, delta, eta, kappa, S = params
+    S = int(S)
 
     # calucalate p(z|lam, mu, gamma)
-    ProbDist = runModel(S, lam, mu, gamma, age)
+    ProbDist = runModel(S, lam, mu, gamma, nu, zeta, age)
     lProbDist = np.log(ProbDist)
 
     # repeat the above values to create a (2S+1, n) array
@@ -124,29 +146,32 @@ def loglikelihood_perpoint(params, y, S, age):
     return LL
 
 
-def loglikelihood(params, beta, S, age):
-    return np.sum(loglikelihood_perpoint(params, beta, S, age))
+def loglikelihood(params, beta, age):
+    return np.sum(loglikelihood_perpoint(params, beta, age))
 
 
 def run_inference(
     beta, 
     age, 
-    S, 
     nlive=1500, 
     lamscale=1.0, 
     muscale=0.05, 
     gammascale=0.05, 
+    nuscale=0.05, 
+    zetascale=0.05, 
+    Smin=3,
+    Smax=20,
     verbose=False
 ):
 
     # set the std of the halfnormal priors on lam, mu, gamma
-    scales = np.array([lamscale, muscale, gammascale])
-    ndims = 7 + 2*S +1
+    scales = np.array([lamscale, muscale, gammascale, nuscale, zetascale])
+    ndims = 9
     
     # create dummy functions which takes only the params as an argument to pass
     # to dynesty
-    prior_function = lambda flat_prior: prior_transform(flat_prior, scales)
-    loglikelihood_function = lambda params: loglikelihood(params, beta, S, age)
+    prior_function = lambda flat_prior: prior_transform(flat_prior, scales, Smin, Smax)
+    loglikelihood_function = lambda params: loglikelihood(params, beta, age)
 
     t0 = time()
 
